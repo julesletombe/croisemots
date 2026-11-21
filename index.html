@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Croisemots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: joyeux et net, une soirée jeux entre potes, sans gadgets
+   IDEA: le plateau de lettres posé sur la table, avec son chevalet en bois
+   PICTURE: le plateau 15×15 lui-même, en grand ; dans le hall, une rangée de tuiles
+   COLOUR and TYPE: fond blanc, cases framboise et bleu, tuiles bois miel ; Rubik
+   LAYOUT: une colonne mobile : joueurs, plateau, chevalet, actions, historique */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#14161b);--ink:light-dark(#1d1f24,#eceef2);--mute:light-dark(#686c75,#a0a6b0);--sq:light-dark(#ebe9e4,#262a32);--line:light-dark(#d8d5ce,#343944);--tw:#d6336c;--dw:light-dark(#f6a9b9,#a54a63);--dwink:light-dark(#7a1f37,#ffffff);--tl:#1c6dd0;--dl:light-dark(#a3d2f5,#3a77a6);--dlink:light-dark(#0f4c8a,#ffffff);--tile:#f3d79f;--tile2:#e3b866;--tileink:#2a1f0e;--acc:#d6336c;--card:light-dark(#f5f4f1,#1e2128)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Rubik,system-ui,sans-serif;overflow-x:clip}
+main{max-width:620px;margin:0 auto;padding:0 max(3vw,10px) 48px}
+.top{max-width:620px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px max(3vw,10px)}
+.logo{font-weight:800;font-size:24px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}.logo span{color:var(--acc)}
+.pz{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mute)}
+input{font:inherit;font-size:16px;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.pz input{width:150px}
+input:focus-visible,.btn:focus-visible,a:focus-visible,.c:focus-visible,.rt:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn{font:inherit;font-weight:500;min-height:44px;padding:8px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.btn.warn{color:var(--acc);border-color:var(--acc)}
+.btn:disabled{opacity:.45;cursor:default}
+h1{font-size:32px;line-height:1.05;margin:0;text-wrap:balance}
+h2{font-size:20px;margin:28px 0 10px}
+.hero{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;margin:8px 0 22px}
+.hero b{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;background:linear-gradient(var(--tile),var(--tile2));color:var(--tileink);font-size:clamp(16px,5vw,30px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);animation:pop .5s backwards}
+.hero b:nth-child(n+6){background:var(--tw);color:#fff}
+@keyframes pop{from{transform:translateY(-14px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.hero b{animation:none}}
+.newf{display:flex;flex-wrap:wrap;gap:8px}.newf input{flex:1 1 220px}
+.list{display:grid;gap:8px}
+.gcard{display:grid;gap:2px;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.gcard span{color:var(--mute);font-size:14px}.gcard em{font-style:normal;font-size:14px;font-weight:500}
+.gcard.hot{border-color:var(--acc)}.gcard.hot em{color:var(--acc)}
+.empty,.note{color:var(--mute)}
+.note{padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);margin:8px 0}
+.rules{margin-top:26px;color:var(--mute);font-size:15px}.rules summary{cursor:pointer;color:var(--ink);font-weight:500;min-height:44px;display:flex;align-items:center}
+.ghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:2px 0 12px}
+.back{color:var(--mute);text-decoration:none;font-size:15px;min-height:44px;display:inline-flex;align-items:center}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px}
+.pl{padding:8px 12px;border-radius:12px;background:var(--card);border:2px solid transparent}
+.pl.on{border-color:var(--acc)}.pl b{display:block;font-size:26px;line-height:1.1}.pl small{color:var(--mute);font-size:13px}
+.banner{font-weight:700;margin:4px 0 10px;min-height:24px}.banner.me{color:var(--acc)}
+.board{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:2px;padding:3px;background:var(--line);border-radius:10px;width:100%;touch-action:manipulation}
+.c{aspect-ratio:1;border-radius:3px;background:var(--sq);display:grid;place-items:center;font-size:clamp(7px,2vw,11px);font-weight:700;color:#fff;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;padding:0;border:0;font-family:inherit}
+.c.tw{background:var(--tw)}.c.dw{background:var(--dw);color:var(--dwink)}.c.tl{background:var(--tl)}.c.dl{background:var(--dl);color:var(--dlink)}
+.c.star{font-size:clamp(10px,3vw,18px)}
+.t{background:linear-gradient(var(--tile),var(--tile2))!important;color:var(--tileink)!important;font-size:clamp(11px,3.7vw,22px);font-weight:800;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.t .v,.rt .v{position:absolute;right:2px;bottom:0;font-size:clamp(6px,1.6vw,10px);font-weight:600;line-height:1.2}
+.t.blank{color:#b0306a!important}
+.t.new{background:linear-gradient(#ffe88f,#f5c542)!important;outline:2px solid var(--acc);outline-offset:-2px}
+.t.last{box-shadow:inset 0 0 0 2px var(--tl)}
+.preview{min-height:26px;margin:8px 0 4px;font-weight:500}.preview.bad{color:var(--mute);font-weight:400}
+.rack{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:440px;margin:6px auto 12px}
+.rt{aspect-ratio:1;border-radius:9px;border:0;background:linear-gradient(var(--tile),var(--tile2));color:var(--tileink);font:800 clamp(20px,6vw,30px) Rubik,sans-serif;position:relative;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2);padding:0}
+.rt .v{right:5px;bottom:3px;font-size:12px}
+.rt.sel{transform:translateY(-6px);outline:3px solid var(--acc)}
+.rt.ex{outline:3px dashed var(--tl)}
+.rt.used{opacity:.22}
+.acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.msg{min-height:24px;margin:10px 0;text-align:center;color:var(--mute)}.msg.bad{color:var(--acc);font-weight:500}
+.last{padding:10px 14px;border-radius:12px;background:var(--card);margin:6px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.last:empty{display:none}
+.log{margin-top:14px;color:var(--mute);font-size:15px}.log summary{cursor:pointer;color:var(--ink);font-weight:500;min-height:44px;display:flex;align-items:center}
+.log ol{padding-left:20px;margin:4px 0}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:16px;z-index:9}
+.ov[hidden]{display:none}
+.pk{background:var(--bg);border-radius:16px;padding:16px;max-width:380px;width:100%;text-align:center}
+.pkl{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0 14px}
+.pkl .rt{font-size:20px}
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="#" class="logo">Croise<span>mots</span></a>
+  <label class="pz">Ton pseudo <input id="pseudo" maxlength="16" placeholder="Ton prénom" autocomplete="nickname"></label>
+</header>
+<main>
+<section id="lobby">
+  <div class="hero" aria-hidden="true"><b>C</b><b>R</b><b>O</b><b>I</b><b>S</b><b>E</b><b>M</b><b>O</b><b>T</b><b>S</b></div>
+  <div id="note" class="note" hidden></div>
+  <form id="newf" class="newf"><input id="gname" maxlength="40" placeholder="Nom de la partie (ex. Les copains)"><button class="btn primary" id="newb">Nouvelle partie</button></form>
+  <h2>Parties</h2>
+  <div id="list" class="list"><p class="empty">Connexion…</p></div>
+  <details class="rules"><summary>Règles de la maison</summary>
+    <p>Plateau 15×15 avec cases lettre compte double (LD), lettre compte triple (LT), mot compte double (MD) et mot compte triple (MT). 102 lettres, dont 2 jokers. Le premier mot passe par l'étoile centrale.</p>
+    <p>Poser ses 7 lettres d'un coup rapporte 50 points de bonus. Il n'y a pas de dictionnaire automatique : si un mot te paraît faux, appuie sur « Contester ». Le coup est alors annulé et son auteur perd son tour.</p>
+    <p>La partie s'arrête quand un joueur vide son chevalet et que le sac est vide (il gagne les points des lettres restantes des autres), ou après deux tours complets sans points.</p>
+  </details>
+</section>
+<section id="game" hidden>
+  <div class="ghead"><a href="#" class="back">← Parties</a><h1 id="gtitle"></h1></div>
+  <div id="players" class="players"></div>
+  <div id="banner" class="banner"></div>
+  <div id="board" class="board" role="grid" aria-label="Plateau"></div>
+  <div id="preview" class="preview"></div>
+  <div id="rack" class="rack" aria-label="Ton chevalet"></div>
+  <div id="acts" class="acts"></div>
+  <div id="msg" class="msg" role="status"></div>
+  <div id="last" class="last"></div>
+  <details class="log"><summary>Historique</summary><ol id="log"></ol></details>
+</section>
+</main>
+<div id="picker" class="ov" hidden><div class="pk"><p>Quelle lettre pour ton joker ?</p><div id="pkl" class="pkl"></div><button class="btn" id="pkx">Annuler</button></div></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,doc,setDoc,deleteDoc,onSnapshot,collection,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const fbApp=initializeApp({apiKey:"AIzaSyBMvc9WlxHKrDVJddf4LKKNXHIblbQLNXQ",authDomain:"croisemots.firebaseapp.com",projectId:"croisemots",storageBucket:"croisemots.firebasestorage.app",messagingSenderId:"611914018423",appId:"1:611914018423:web:e00d45a4256a45fa3e2072"});
+const FS=getFirestore(fbApp),AUTH=getAuth(fbApp);
+const wrapS=s=>({id:s.id,exists:s.exists(),data:()=>s.data(),metadata:s.metadata});
+const fbdb={
+  doc:p=>{const r=doc(FS,p);return{set:d=>setDoc(r,d),delete:()=>deleteDoc(r),onSnapshot:(n,e)=>onSnapshot(r,s=>n(wrapS(s)),e)}},
+  collection:p=>({orderBy:(f,dir)=>({limit:k=>({onSnapshot:(n,e)=>onSnapshot(query(collection(FS,p),orderBy(f,dir),limit(k)),s=>n({docs:s.docs.map(wrapS),metadata:s.metadata}),e)})})})
+};
+{
+//LOGIC-START
+const VALS={A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:10,L:1,M:2,N:1,O:1,P:3,Q:8,R:1,S:1,T:1,U:1,V:4,W:10,X:10,Y:10,Z:10,'?':0};
+const DIST="A9B2C2D3E15F2G2H2I8J1K1L5M3N6O6P2Q1R6S6T6U6V2W1X1Y1Z1?2";
+const val=ch=>VALS[ch]||0;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const makeBag=()=>{const b=[];DIST.replace(/([A-Z?])(\d+)/g,(m,l,n)=>{for(let i=0;i<+n;i++)b.push(l)});return shuffle(b)};
+const PREM=Array(225).fill('');
+const mark=(t,list)=>list.forEach(([r,c])=>{for(const [a,b] of [[r,c],[c,r],[14-r,c],[r,14-c],[14-r,14-c],[c,14-r],[14-c,r],[14-c,14-r]])PREM[a*15+b]=t});
+mark('dl',[[0,3],[2,6],[3,7],[6,6]]);mark('tl',[[1,5],[5,5]]);mark('dw',[[1,1],[2,2],[3,3],[4,4],[7,7]]);mark('tw',[[0,0],[0,7]]);
+function evaluate(board,pending){
+  if(!pending.length)return{err:'Pose au moins une lettre.'};
+  const rows=new Set(pending.map(p=>p.r)),cols=new Set(pending.map(p=>p.c));
+  if(rows.size>1&&cols.size>1)return{err:'Tes lettres doivent être sur une même ligne ou une même colonne.'};
+  const isNew=(r,c)=>pending.some(x=>x.r===r&&x.c===c);
+  const cell=(r,c)=>{if(r<0||c<0||r>14||c>14)return'';const p=pending.find(x=>x.r===r&&x.c===c);return p?p.ch:(board[r*15+c]||'')};
+  const empty=board.every(x=>!x);
+  let horiz;
+  if(pending.length>1)horiz=rows.size===1;
+  else{const{r,c}=pending[0];horiz=!!(cell(r,c-1)||cell(r,c+1))||!(cell(r-1,c)||cell(r+1,c))}
+  const fixed=horiz?pending[0].r:pending[0].c;
+  const idx=pending.map(p=>horiz?p.c:p.r),lo=Math.min(...idx),hi=Math.max(...idx);
+  for(let i=lo;i<=hi;i++)if(!(horiz?cell(fixed,i):cell(i,fixed)))return{err:'Il ne doit pas y avoir de trou dans ton mot.'};
+  if(empty){if(!isNew(7,7))return{err:'Le premier mot doit passer par l’étoile du centre.'};if(pending.length<2)return{err:'Le premier mot doit faire au moins 2 lettres.'}}
+  else if(!pending.some(({r,c})=>[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const rr=r+a,cc=c+b;return rr>=0&&rr<15&&cc>=0&&cc<15&&board[rr*15+cc]})))return{err:'Ton mot doit toucher une lettre déjà posée.'};
+  const read=(r,c,dr,dc)=>{while(cell(r-dr,c-dc)){r-=dr;c-=dc}let w='',sum=0,mult=1,len=0;
+    while(cell(r,c)){const ch=cell(r,c);let v=val(ch);if(isNew(r,c)){const p=PREM[r*15+c];if(p==='dl')v*=2;if(p==='tl')v*=3;if(p==='dw')mult*=2;if(p==='tw')mult*=3}sum+=v;w+=ch.toUpperCase();len++;r+=dr;c+=dc}
+    return{w,score:sum*mult,len}};
+  const words=[];const p0=pending[0];
+  const main=horiz?read(p0.r,p0.c,0,1):read(p0.r,p0.c,1,0);if(main.len>1)words.push(main);
+  for(const p of pending){const x=horiz?read(p.r,p.c,1,0):read(p.r,p.c,0,1);if(x.len>1)words.push(x)}
+  if(!words.length)return{err:'Forme un mot d’au moins 2 lettres.'};
+  const bingo=pending.length===7?50:0;
+  return{words,bingo,total:words.reduce((s,w)=>s+w.score,0)+bingo};
+}
+function finish(d,outIdx){
+  let bonus=0;
+  d.players.forEach((p,i)=>{const v=(p.rack||[]).reduce((s,ch)=>s+val(ch),0);p.score-=v;if(i!==outIdx)bonus+=v});
+  if(outIdx>=0)d.players[outIdx].score+=bonus;
+  d.status='done';const best=Math.max(...d.players.map(p=>p.score));
+  d.winners=d.players.filter(p=>p.score===best).map(p=>p.name);
+  d.log=['Partie terminée',...(d.log||[])].slice(0,60);
+}
+//LOGIC-END
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const LAB={tw:'MT',dw:'MD',tl:'LT',dl:'LD'};
+let db=null,user=null,uid=null,canWrite=true,myName='';
+let games=[],gamesLoaded=false,game=null,gameId=null,unsubGame=null,gameTimer=null;
+let myRack=[],pending=[],sel=-1,exMode=false,exSel=new Set(),busy=false,confirmKey='';
+const say=(t,bad)=>{const m=$('#msg');m.textContent=t||'';m.className='msg'+(bad?' bad':'')};
+const meIdx=()=>game?(game.players||[]).findIndex(p=>p.id===uid):-1;
+const myTurn=()=>game&&game.status==='playing'&&meIdx()===game.turn;
+const sortKey=a=>[...a].sort().join('');
+
+function renderLobby(){
+  const list=$('#list');
+  if(!gamesLoaded)return;
+  if(!games.length){list.innerHTML='<p class="empty">Aucune partie pour l’instant. Crée la première, puis envoie le lien de cette page à tes amis.</p>';return}
+  list.innerHTML=games.map(({id,d})=>{
+    const ps=(d.players||[]);const turnP=ps[d.turn];const mine=d.status==='playing'&&turnP&&turnP.id===uid;
+    const st=d.status==='waiting'?'En attente de joueurs':d.status==='done'?'Terminée · '+esc((d.winners||[]).join(' & '))+' gagne':mine?'À toi de jouer':'Au tour de '+esc(turnP?.name);
+    return `<a class="gcard${mine?' hot':''}" href="#partie-${esc(id)}"><b>${esc(d.name)}</b><span>${ps.map(p=>esc(p.name)+' '+(p.score|0)).join(' · ')}</span><em>${st}</em></a>`}).join('');
+}
+function renderGame(){
+  if(!game){$('#gtitle').textContent='Chargement…';['#players','#banner','#board','#rack','#acts','#last','#preview'].forEach(s=>$(s).innerHTML='');return}
+  const d=game,me=meIdx(),ps=d.players||[];
+  $('#gtitle').textContent=d.name||'Partie';
+  $('#players').innerHTML=ps.map((p,i)=>`<div class="pl${d.status==='playing'&&i===d.turn?' on':''}"><small>${esc(p.name)}${i===me?' (toi)':''}</small><b>${p.score|0}</b></div>`).join('')+`<div class="pl"><small>Sac</small><b>${(d.bag||[]).length}</b></div>`;
+  const b=$('#banner');
+  if(d.status==='waiting'){b.className='banner';b.textContent=ps.length<2?'En attente d’un deuxième joueur. Envoie le lien de cette page à tes amis.':'Prêt ! Le créateur peut lancer la partie.'}
+  else if(d.status==='done'){b.className='banner me';b.textContent='Partie terminée : '+(d.winners||[]).join(' & ')+' gagne !'}
+  else if(myTurn()){b.className='banner me';b.textContent='À toi de jouer !'}
+  else{b.className='banner';b.textContent='Au tour de '+(ps[d.turn]?.name||'…')}
+  const lastCells=new Set(d.lastMove?.type==='play'?d.lastMove.cells||[]:[]);
+  const board=d.board||[];
+  $('#board').innerHTML=Array.from({length:225},(_,i)=>{
+    const pd=pending.find(p=>p.r*15+p.c===i);const ch=pd?pd.ch:board[i];
+    if(ch){const blank=ch!==ch.toUpperCase();return `<button class="c t${blank?' blank':''}${pd?' new':''}${lastCells.has(i)?' last':''}" data-i="${i}" aria-label="${esc(ch.toUpperCase())}">${esc(ch.toUpperCase())}${blank?'':`<span class="v">${val(ch)}</span>`}</button>`}
+    const p=PREM[i];return `<button class="c ${p}${i===112?' star':''}" data-i="${i}" aria-label="${p?LAB[p]:'case vide'}">${i===112?'★':(LAB[p]||'')}</button>`}).join('');
+  const pv=$('#preview');
+  if(pending.length){const ev=evaluate(board,pending);if(ev.err){pv.className='preview bad';pv.textContent=ev.err}else{pv.className='preview';pv.textContent=ev.words.map(w=>w.w+' '+w.score).join(' + ')+(ev.bingo?' + 50 (7 lettres !)':'')+' = '+ev.total+' points'}}
+  else{pv.className='preview bad';pv.textContent=myTurn()?(exMode?'Touche les lettres à remettre dans le sac.':'Touche une lettre de ton chevalet, puis une case du plateau.'):''}
+  const rk=$('#rack');
+  if(me>=0&&d.status!=='waiting'){const used=new Set(pending.map(p=>p.k));
+    rk.innerHTML=myRack.map((ch,k)=>`<button class="rt${k===sel?' sel':''}${used.has(k)?' used':''}${exSel.has(k)?' ex':''}" data-k="${k}" aria-label="${ch==='?'?'joker':ch}">${ch==='?'?'':esc(ch)}${ch==='?'?'':`<span class="v">${val(ch)}</span>`}</button>`).join('')}
+  else rk.innerHTML='';
+  const A=[];const btn=(id,label,cls='',dis=false)=>A.push(`<button class="btn ${cls}" data-a="${id}"${dis||busy?' disabled':''}>${label}</button>`);
+  if(d.status==='waiting'){
+    if(me<0&&uid&&canWrite)btn('join','Rejoindre la partie','primary',ps.length>=4);
+    if(d.createdBy===uid)btn('start','Lancer la partie','primary',ps.length<2);
+    if(me>=0&&d.createdBy!==uid)A.push('<span class="empty">En attente du lancement…</span>');
+  }else if(d.status==='playing'&&me>=0){
+    if(myTurn()&&exMode){btn('doex',`Échanger ${exSel.size} lettre${exSel.size>1?'s':''}`,'primary',!exSel.size);btn('cancelex','Annuler')}
+    else if(myTurn()){btn('play','Jouer','primary',!pending.length);btn('recall','Reprendre','',!pending.length);btn('shuf','Mélanger');btn('ex','Échanger','',(d.bag||[]).length<7);btn('pass',confirmKey==='pass'?'Confirmer : passer':'Passer',confirmKey==='pass'?'warn':'')}
+    else btn('shuf','Mélanger');
+  }
+  if(d.createdBy===uid&&d.status!=='playing')btn('del',confirmKey==='del'?'Confirmer la suppression':'Supprimer la partie','warn');
+  $('#acts').innerHTML=A.join('');
+  const lm=d.lastMove,L=$('#last');
+  if(lm&&ps[lm.player]){
+    let t='';const who=esc(ps[lm.player].name);
+    if(lm.type==='play')t=`${who} a joué <b>${esc((lm.words||[]).join(', '))}</b> pour ${lm.points|0} points.`;
+    else if(lm.type==='exchange')t=`${who} a échangé ${lm.n|0} lettre${lm.n>1?'s':''}.`;
+    else if(lm.type==='pass')t=`${who} a passé son tour.`;
+    else if(lm.type==='contest')t=`${who} a contesté ${esc((lm.words||[]).join(', '))} : coup annulé.`;
+    const can=lm.type==='play'&&lm.contestable&&me>=0&&me!==lm.player&&d.prev&&!busy;
+    L.innerHTML=`<span>${t}</span>`+(can?`<button class="btn warn" data-a="contest">${confirmKey==='contest'?'Confirmer : le mot n’existe pas':'Contester'}</button>`:'');
+  }else L.innerHTML='';
+  $('#log').innerHTML=(d.log||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+}
+function render(){
+  const inGame=!!gameId;$('#lobby').hidden=inGame;$('#game').hidden=!inGame;
+  inGame?renderGame():renderLobby();
+}
+async function save(d,after){
+  busy=true;render();
+  try{d.updated=Date.now();await db.doc('games/'+gameId).set(d);pending=[];sel=-1;exMode=false;exSel.clear();confirmKey='';if(after)after();say('')}
+  catch(e){say('Impossible d’enregistrer pour l’instant, réessaie.',true)}
+  finally{busy=false;render()}
+}
+const nextTurn=(d,me)=>{d.turn=(me+1)%d.players.length};
+const stuck=d=>d.passes>=2*d.players.length;
+async function act(a){
+  const d=clone(game),me=meIdx(),P=d.players[me];
+  if(a!=='pass'&&a!=='del'&&a!=='contest')confirmKey='';
+  if(a==='join'){if(!myName)return say('Choisis d’abord ton pseudo en haut de la page.',true);if(d.players.some(p=>p.id===uid))return;d.players.push({id:uid,name:myName,score:0,rack:[]});d.log=[myName+' rejoint la partie',...(d.log||[])];return save(d)}
+  if(a==='start'){d.players.forEach(p=>p.rack=d.bag.splice(d.bag.length-7));d.status='playing';d.turn=0;d.log=['La partie commence',...(d.log||[])];return save(d)}
+  if(a==='del'){if(confirmKey!=='del'){confirmKey='del';return render()}busy=true;try{await db.doc('games/'+gameId).delete();location.hash=''}catch(e){say('Suppression impossible pour l’instant.',true)}busy=false;confirmKey='';return}
+  if(a==='recall'){pending=[];sel=-1;return render()}
+  if(a==='shuf'){pending=[];sel=-1;shuffle(myRack);return render()}
+  if(a==='ex'){pending=[];sel=-1;exMode=true;exSel.clear();return render()}
+  if(a==='cancelex'){exMode=false;exSel.clear();return render()}
+  if(a==='contest'){if(confirmKey!=='contest'){confirmKey='contest';return render()}
+    const pv=d.prev,lm=d.lastMove;if(!pv||!lm)return;const mover=d.players[pv.player];
+    d.board=pv.board;d.bag=pv.bag;mover.rack=pv.rack;d.players.forEach((p,i)=>p.score=pv.scores[i]);d.passes=(pv.passes|0)+1;d.status='playing';d.winners=null;nextTurn(d,pv.player);
+    d.lastMove={type:'contest',player:me,words:lm.words,contestable:false};d.prev=null;
+    d.log=[`${P.name} conteste ${lm.words.join(', ')} : coup de ${mover.name} annulé`,...(d.log||[])].slice(0,60);return save(d)}
+  if(!myTurn())return;
+  if(a==='pass'){if(confirmKey!=='pass'){confirmKey='pass';return render()}
+    d.passes=(d.passes|0)+1;d.lastMove={type:'pass',player:me};d.prev=null;d.log=[P.name+' passe',...(d.log||[])].slice(0,60);stuck(d)?finish(d,-1):nextTurn(d,me);return save(d)}
+  if(a==='doex'){if(d.bag.length<7)return say('Échange impossible : il reste moins de 7 lettres dans le sac.',true);
+    const out=[...exSel].map(k=>myRack[k]),keep=myRack.filter((_,i)=>!exSel.has(i));const drawn=d.bag.splice(d.bag.length-out.length);
+    d.bag=shuffle(d.bag.concat(out));P.rack=keep.concat(drawn);d.passes=(d.passes|0)+1;d.lastMove={type:'exchange',player:me,n:out.length};d.prev=null;
+    d.log=[`${P.name} échange ${out.length} lettre${out.length>1?'s':''}`,...(d.log||[])].slice(0,60);stuck(d)?finish(d,-1):nextTurn(d,me);return save(d)}
+  if(a==='play'){const ev=evaluate(d.board,pending);if(ev.err)return say(ev.err,true);
+    if(sortKey(myRack)!==sortKey(P.rack))return say('Ton chevalet a changé, recommence ton coup.',true);
+    d.prev={board:[...d.board],bag:[...d.bag],rack:[...P.rack],scores:d.players.map(p=>p.score),player:me,passes:d.passes|0};
+    pending.forEach(p=>d.board[p.r*15+p.c]=p.ch);
+    const used=new Set(pending.map(p=>p.k)),left=myRack.filter((_,i)=>!used.has(i));
+    const drawn=d.bag.splice(Math.max(0,d.bag.length-(7-left.length)));P.rack=left.concat(drawn);P.score+=ev.total;d.passes=0;
+    const ws=ev.words.map(w=>w.w);
+    d.lastMove={type:'play',player:me,words:ws,points:ev.total,cells:pending.map(p=>p.r*15+p.c),contestable:true};
+    d.log=[`${P.name} : ${ws.join(', ')} (${ev.total}${ev.bingo?', 7 lettres !':''})`,...(d.log||[])].slice(0,60);
+    (!P.rack.length&&!d.bag.length)?finish(d,me):nextTurn(d,me);return save(d)}
+}
+let pickCell=-1,pickK=-1;
+$('#pkl').innerHTML='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>`<button class="rt" data-l="${l}">${l}</button>`).join('');
+$('#pkl').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;pending.push({r:Math.floor(pickCell/15),c:pickCell%15,ch:b.dataset.l.toLowerCase(),k:pickK});sel=-1;$('#picker').hidden=true;render()});
+$('#pkx').addEventListener('click',()=>{$('#picker').hidden=true});
+$('#board').addEventListener('click',e=>{const c=e.target.closest('[data-i]');if(!c||!myTurn()||exMode||busy)return;const i=+c.dataset.i;
+  const pi=pending.findIndex(p=>p.r*15+p.c===i);if(pi>=0){pending.splice(pi,1);return render()}
+  if((game.board||[])[i])return;if(sel<0)return say('Touche d’abord une lettre de ton chevalet.');
+  if(myRack[sel]==='?'){pickCell=i;pickK=sel;$('#picker').hidden=false;return}
+  pending.push({r:Math.floor(i/15),c:i%15,ch:myRack[sel],k:sel});
+  const used=new Set(pending.map(p=>p.k));sel=-1;say('');render()});
+$('#rack').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;const k=+b.dataset.k;
+  if(exMode){exSel.has(k)?exSel.delete(k):exSel.add(k);return render()}
+  if(pending.some(p=>p.k===k))return;sel=sel===k?-1:k;render()});
+$('#acts').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&!busy)act(b.dataset.a)});
+$('#last').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&!busy)act(b.dataset.a)});
+$('#pseudo').addEventListener('input',e=>{myName=e.target.value.trim().slice(0,16);try{localStorage.setItem('cm-pseudo',myName)}catch(x){}});
+$('#newf').addEventListener('submit',async e=>{e.preventDefault();if(!db||!uid)return;if(!myName){$('#pseudo').focus();return note('Choisis d’abord ton pseudo en haut de la page.')}
+  const id='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const name=($('#gname').value.trim()||'Partie de '+myName).slice(0,40);
+  const d={name,createdBy:uid,created:Date.now(),updated:Date.now(),status:'waiting',players:[{id:uid,name:myName,score:0,rack:[]}],board:Array(225).fill(''),bag:makeBag(),turn:0,passes:0,lastMove:null,prev:null,winners:null,log:[myName+' crée la partie']};
+  $('#newb').disabled=true;try{await db.doc('games/'+id).set(d);$('#gname').value='';location.hash='partie-'+id}catch(x){note('Impossible de créer la partie. Vérifie ta connexion et réessaie.')}$('#newb').disabled=false});
+function note(t){const n=$('#note');n.textContent=t;n.hidden=!t}
+function openGame(id){
+  if(id===gameId)return;if(unsubGame){unsubGame();unsubGame=null}clearTimeout(gameTimer);
+  gameId=id;game=null;pending=[];sel=-1;exMode=false;exSel.clear();confirmKey='';myRack=[];say('');render();
+  if(!id||!db)return;
+  gameTimer=setTimeout(()=>say('La partie ne répond pas encore, vérifie ta connexion.',true),10000);
+  unsubGame=db.doc('games/'+id).onSnapshot(s=>{
+    if(!s.metadata.fromCache){clearTimeout(gameTimer);if($('#msg').textContent.startsWith('La partie ne'))say('')}
+    if(!s.exists){if(!s.metadata.fromCache){game=null;$('#gtitle').textContent='Partie introuvable';}return}
+    const prevTurn=game&&game.turn;game=s.data();
+    const me=meIdx();
+    if(me>=0){const r=game.players[me].rack||[];if(sortKey(r)!==sortKey(myRack)){myRack=[...r];pending=[];sel=-1;exSel.clear()}}
+    if(!myTurn()){pending=[];exMode=false;exSel.clear()}
+    if(prevTurn!==game.turn&&confirmKey!=='')confirmKey='';
+    render()},
+    err=>{clearTimeout(gameTimer);say('Connexion à la partie perdue. Recharge la page.',true)});
+}
+function route(){const h=location.hash.slice(1);openGame(h.startsWith('partie-')?h.slice(7):null)}
+window.addEventListener('hashchange',route);
+render();
+(async()=>{
+  try{myName=localStorage.getItem('cm-pseudo')||''}catch(x){}
+  db=fbdb;
+  try{uid=await new Promise((res,rej)=>{const off=onAuthStateChanged(AUTH,u=>{if(u){off();res(u.uid)}});signInAnonymously(AUTH).catch(rej)})}
+  catch(x){note('Connexion impossible pour l’instant. Vérifie ta connexion internet puis recharge la page.');$('#list').innerHTML='';return}
+  $('#pseudo').value=myName;
+  const t=setTimeout(()=>{if(!gamesLoaded)$('#list').innerHTML='<p class="empty">Les parties ne répondent pas encore. Vérifie ta connexion.</p>'},10000);
+  db.collection('games').orderBy('updated','desc').limit(50).onSnapshot(s=>{
+    if(!s.metadata.fromCache)clearTimeout(t);gamesLoaded=true;
+    games=s.docs.map(x=>({id:x.id,d:x.data()})).filter(g=>g.d&&Array.isArray(g.d.players));render()},
+    ()=>{clearTimeout(t);gamesLoaded=true;$('#list').innerHTML='<p class="empty">Impossible de charger les parties.</p>'});
+  route();
+})();
+}
+</script>
+</body>
+</html>
